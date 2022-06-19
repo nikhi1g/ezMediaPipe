@@ -1,4 +1,5 @@
-
+import time
+from random import random
 import mediapipe as mp
 import cv2  # OpenCV for camera
 
@@ -12,6 +13,7 @@ cap = cv2.VideoCapture(0)
 # Initiate holistic model
 with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
     # cap = cv2.VideoCapture(2)
+    index_count = 0
     while cap.isOpened():
         ret, frame = cap.read()
 
@@ -35,34 +37,46 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         '''
         end globals
         '''
+        try:
+            index_count += 1
+            for index, landmark in enumerate(results.face_landmarks.landmark):
+                landmark_x = min(int(landmark.x * image_width), image_width - 1)
+                landmark_y = min(int(landmark.y * image_height), image_height - 1)
 
-        for index, landmark in enumerate(results.face_landmarks.landmark):
-            landmark_x = min(int(landmark.x * image_width), image_width - 1)
-            landmark_y = min(int(landmark.y * image_height), image_height - 1)
+                if index == index_count:
+                    cv2.circle(image, (landmark_x, landmark_y), 5, (0, 255, 0), 2)
+                    time.sleep(0.02)
+                    print(index_count)
+                    # print(landmark_x, landmark_y)
+                if index_count > 477:
+                    index_count = 0
 
-            if index == 10:
-                cv2.circle(image, (landmark_x, landmark_y), 5, (0, 255, 0), 2)
-                print(landmark_x, landmark_y)
+
+        except Exception as e:
+            print(e)
+
 
         # 1_Draw face landmark
-        mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACEMESH_CONTOURS,
-                                  mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=1, circle_radius=1),
-                                  mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=1, circle_radius=1))
+        draw_landmarks = True
+        if draw_landmarks:
+            mp_drawing.draw_landmarks(image, results.face_landmarks, mp_holistic.FACEMESH_CONTOURS,
+                                      mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=1, circle_radius=1),
+                                      mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=1, circle_radius=1))
 
-        # 2_Draw Left hand landmark
-        mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2),
-                                  mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2))
+            # 2_Draw Left hand landmark
+            mp_drawing.draw_landmarks(image, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+                                      mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2),
+                                      mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2))
 
-        # 3_Draw Right hand landmark
-        mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2),
-                                  mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2))
+            # 3_Draw Right hand landmark
+            mp_drawing.draw_landmarks(image, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS,
+                                      mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2),
+                                      mp_drawing.DrawingSpec(color=(150, 255, 0), thickness=2, circle_radius=2))
 
-        # 4_Draw Pose detection landmark
-        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
-                                  mp_drawing.DrawingSpec(color=(255, 0, 255), thickness=2, circle_radius=2),
-                                  mp_drawing.DrawingSpec(color=(255, 0, 255), thickness=2, circle_radius=2))
+            # 4_Draw Pose detection landmark
+            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_holistic.POSE_CONNECTIONS,
+                                      mp_drawing.DrawingSpec(color=(255, 0, 255), thickness=2, circle_radius=2),
+                                      mp_drawing.DrawingSpec(color=(255, 0, 255), thickness=2, circle_radius=2))
 
         cv2.imshow('Raw webcam Feed', image)
 
